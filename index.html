@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatBTC</title>
+    <style>
+      ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
+  </head>
+  <body class="grid min-h-full place-items-center bg-white px-30 py-100 sm:py-32 lg:px-8">
+    <div class="text-center border border-blue-700 rounded bg-gradient-to-r from-orange-400 via-red-500 to-pink-500">
+      <h1 class="font-bold mb-40 uppercase">This is chat screen</h1>
+      <div class="bg-gradient-to-r from-teal-400 to-blue-500">
+        <div class="">
+          <ul id="messages"></ul>
+        </div>
+        <form id="chat-form">
+          <input
+            type="text"
+            class="rounded focus:outline-none focus:shadow-outline border placeholder-text-12px py-2 px-4"
+            id="chat-mes"
+            placeholder="Enter your message here"
+          />
+          <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+          >
+            Send
+          </button>
+        </form>
+        <p id="username"></p>
+      </div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Create a new Socket.io client
+    const socket = io();
+
+    // Prompt the user to enter their name
+    const name = prompt("Enter your name");
+
+    // Get references to the chat form and input elements
+    const chatForm = document.getElementById("chat-form");
+    const chatMes = document.getElementById("chat-mes");
+    const usernameElement = document.getElementById("username");
+
+    // Set the text content of the username element to the entered name
+    usernameElement.textContent = `Username: ${name}`;
+
+    chatForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const message = chatMes.value.trim();
+      // Check if the input is empty
+      if (message === "") {
+        // If input is empty, return early and do not submit the form
+        return;
+      }
+      socket.emit("on-chat", {
+        name,
+        message,
+      });
+
+      chatMes.value = "";
+    });
+
+    // Get a reference to the messages list
+    const messages = document.querySelector("#messages");
+
+    // Listen for chat messages from the server
+    socket.on("user-chat", (messageData) => {
+      const chatItem = document.createElement("li");
+      chatItem.textContent = `${messageData.name}: ${messageData.message}`;
+      messages.appendChild(chatItem);
+    });
+  </script>
+</html>
